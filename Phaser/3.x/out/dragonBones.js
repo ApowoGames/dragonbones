@@ -15992,7 +15992,8 @@ var dragonBones;
                 };
                 DragonBonesScenePlugin.prototype.shutdown = function () {
                     var ee = this.systems.events;
-                    ee.off('update', this.update, this);
+                    ee.once('start', this.start, this);
+			ee.off('update', this.update, this);
                     ee.off('shutdown', this.shutdown, this);
                 };
                 DragonBonesScenePlugin.prototype.destroy = function () {
