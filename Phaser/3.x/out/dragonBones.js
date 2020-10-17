@@ -15513,11 +15513,31 @@ var dragonBones;
                     // can't use this._armature.display.remove here, perphaps this._renderDisplay is a child of armature.
                     this._renderDisplay.parentContainer.remove(this._renderDisplay);
                 };
-                Slot.prototype._updateZOrder = function () {
-                    if (this._renderDisplay.depth === this._zOrder)
+                
+                //Works, but need more time to understand and test solution.
+                //Fix by MadDogMayCry
+				Slot.prototype._updateZOrder=function(){					
+                    //Hmm...
+					if (this.slotData.zOrder==this._zOrder){
                         return;
-                    this._renderDisplay.setDepth(this._zOrder);
+                    }
+                    //Test					
+                    // var name=this.name;
+					// var oldPos=this.slotData.zOrder;
+					// var newPos=this._zOrder;
+					// var thisSlot=this._armature._slots[oldPos].display;
+					// var thisSlotName=this._armature._slots[oldPos].name;					
+                    // console.log(name+" "+oldPos+" -> "+newPos+" | "+oldPos+" <- "+newPos+" "+thisSlotName);
+					this.armature.display.moveTo(this._armature._slots[newPos].display,newPos);
                 };
+                
+                //Old draw ordering method
+                //Slot.prototype._updateZOrder = function () {
+                    //if (this._renderDisplay.depth === this._zOrder)
+                        //return;
+                    //this._renderDisplay.setDepth(this._zOrder);
+                //};
+                
                 Slot.prototype._updateVisible = function () {
                     this._renderDisplay.setVisible(this._parent.visible && this._visible);
                 };
