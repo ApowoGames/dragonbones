@@ -15634,20 +15634,22 @@ var dragonBones;
                     }
                 };
 				
-				//Fixed by MadDogMayCry
-				Slot.prototype._updateZOrder = function () {
-                    if (this.slotData.zOrder == this._zOrder){
+		//Draw ordering fix by MadDogMayCry
+				Slot.prototype._updateZOrder=function(){                   	
+					if (this._renderDisplay.depth === this._zOrder){
                         return;
-                    }
-					
-					//Demo
-					// console.log(this.name+" - "+this.slotData.zOrder+" -> "+this._zOrder);					
-					var obj=this.armature.display.list[this.slotData.zOrder];
-					this.slotData.zOrder=this._zOrder;
-					this.armature.display.moveTo(obj,this._zOrder);					
-                };
+                    }					
+					// Debug					
+					// var newPos=this._zOrder;					
+					// var name=this.name;
+					// var oldPos=this.slotData.zOrder;
+					// var thisSlot=this._armature._slots[oldPos].display;
+					// var thisSlotName=this._armature._slots[oldPos].name;
+					// console.log(name+" "+oldPos+" -> "+newPos+" | "+oldPos+" <- "+newPos+" "+thisSlotName);
+					this.armature.display.moveTo(this._armature._slots[this._zOrder].display,this._zOrder);
+                };	
                 
-				Slot.prototype._updateVisible = function () {
+		Slot.prototype._updateVisible = function () {
                     this._renderDisplay.setVisible(this._parent.visible && this._visible);
                 };
                 
