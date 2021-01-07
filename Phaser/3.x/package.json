@@ -1,7 +1,7 @@
 {
   "name": "dragonbones-phaser",
   "version": "5.6.2",
-  "main": "",
+  "main": "./out/dragonBones.js",
   "scripts": {
     "build": "tsc && uglifyjs ./out/dragonBones.js -o ./out/dragonBones.min.js -m"
   },

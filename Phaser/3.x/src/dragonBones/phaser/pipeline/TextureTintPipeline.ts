@@ -1,5 +1,5 @@
 namespace dragonBones.phaser.pipeline {
-    export class TextureTintPipeline extends Phaser.Renderer.WebGL.Pipelines.TextureTintPipeline {
+    export class TextureTintPipeline extends Phaser.Renderer.WebGL.Pipelines.MultiPipeline {
         private _tempMatrix1: util.TransformMatrix;
         private _tempMatrix2: util.TransformMatrix;
         private _tempMatrix3: util.TransformMatrix;
