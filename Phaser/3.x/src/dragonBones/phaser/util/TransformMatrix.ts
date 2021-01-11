@@ -1,5 +1,7 @@
 namespace dragonBones.phaser.util {
     export class TransformMatrix extends Phaser.GameObjects.Components.TransformMatrix {
+        decomposedMatrix: any;  // Override the `object` from phaser.
+
         constructor(a?: number, b?: number, c?: number, d?: number, tx?: number, ty?: number) {
             super(a, b, c, d, tx, ty);
             this.decomposedMatrix.skewX = 0;

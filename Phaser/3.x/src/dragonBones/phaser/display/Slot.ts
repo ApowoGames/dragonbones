@@ -148,7 +148,7 @@ namespace dragonBones.phaser.display {
                         let vertexOffset = intArray[this._geometryData.offset + BinaryOffset.GeometryFloatOffset];
 
                         if (vertexOffset < 0) {
-                            vertexOffset += 65536; // Fixed out of bouds bug.
+                            vertexOffset += 65536; // Fixed out of bounds bug.
                         }
 
                         const uvOffset = vertexOffset + vertexCount * 2;
@@ -157,16 +157,16 @@ namespace dragonBones.phaser.display {
                         const meshDisplay = this._renderDisplay as SlotMesh;
                         const region = currentTextureData.region;
 
-                        meshDisplay.fakeVertices = new Float32Array(vertexCount * 2) as any;
-                        meshDisplay.fakeUvs = new Float32Array(vertexCount * 2) as any;
-                        meshDisplay.fakeIndices = new Uint16Array(triangleCount * 3);
+                        let fakeVertices = [];  // new Float32Array(vertexCount * 2) as any;
+                        let fakeUvs = [];  // new Float32Array(vertexCount * 2) as any;
+                        let fakeIndices = [];  // new Uint16Array(triangleCount * 3);
 
                         for (let i = 0, l = vertexCount * 2; i < l; ++i) {
-                            meshDisplay.fakeVertices[i] = floatArray[vertexOffset + i] * scale;
+                            fakeVertices[i] = floatArray[vertexOffset + i] * scale;
                         }
 
                         for (let i = 0; i < triangleCount * 3; ++i) {
-                            meshDisplay.fakeIndices[i] = intArray[this._geometryData.offset + BinaryOffset.GeometryVertexIndices + i];
+                            fakeIndices[i] = intArray[this._geometryData.offset + BinaryOffset.GeometryVertexIndices + i];
                         }
 
                         for (let i = 0, l = vertexCount * 2; i < l; i += 2) {
@@ -174,20 +174,22 @@ namespace dragonBones.phaser.display {
                             const v = floatArray[uvOffset + i + 1];
 
                             if (currentTextureData.rotated) {
-                                meshDisplay.fakeUvs[i] = (region.x + (1.0 - v) * region.width) / currentTextureAtlasData.width;
-                                meshDisplay.fakeUvs[i + 1] = (region.y + u * region.height) / currentTextureAtlasData.height;
+                                fakeUvs[i] = (region.x + (1.0 - v) * region.width) / currentTextureAtlasData.width;
+                                fakeUvs[i + 1] = (region.y + u * region.height) / currentTextureAtlasData.height;
                             }
                             else {
-                                meshDisplay.fakeUvs[i] = (region.x + u * region.width) / currentTextureAtlasData.width;
-                                meshDisplay.fakeUvs[i + 1] = (region.y + v * region.height) / currentTextureAtlasData.height;
+                                fakeUvs[i] = (region.x + u * region.width) / currentTextureAtlasData.width;
+                                fakeUvs[i + 1] = (region.y + v * region.height) / currentTextureAtlasData.height;
                             }
                         }
 
+                        meshDisplay.clear();
+                        meshDisplay.addVertices(fakeVertices, fakeUvs, fakeIndices);
+
                         this._textureScale = 1.0;
+
                         meshDisplay.texture = frame.texture;
                         meshDisplay.frame = frame;
-
-                        meshDisplay.updateVertices();
 
                         const isSkinned = this._geometryData.weight !== null;
                         const isSurface = this._parent._boneData.type !== BoneType.Bone;
@@ -195,20 +197,24 @@ namespace dragonBones.phaser.display {
                             this._identityTransform();
                         }
                     } else { // normal texture.
-                        this._renderDisplay.texture = frame.texture;
-                        this._renderDisplay.frame = frame;
-                        this._renderDisplay.setDisplayOrigin(this._pivotX, this._pivotY);
+                        const renderDisplay = this._renderDisplay as any;  // SlotImage | SlotSprite;
+                        renderDisplay.texture = frame.texture;
+                        renderDisplay.frame = frame;
+                        renderDisplay.setDisplayOrigin(this._pivotX, this._pivotY);
                         this._textureScale = currentTextureData.parent.scale * this.armature.armatureData.scale;
-                        this._renderDisplay.setScale(this._textureScale);
+                        renderDisplay.setScale(this._textureScale);
                     }
 
                     this._visibleDirty = true;
                     return;
                 }
-            } else {
-                this._renderDisplay.x = 0.0;
-                this._renderDisplay.y = 0.0;
-                this._renderDisplay.setTexture(undefined);
+            } else {  // nothing to show.
+                const renderDisplay = this._renderDisplay as any;  // SlotImage | SlotSprite;
+                renderDisplay.x = 0.0;
+                renderDisplay.y = 0.0;
+                if (renderDisplay.setTexture) {
+                    renderDisplay.setTexture(undefined);
+                }
             }
         }
 
@@ -261,8 +267,9 @@ namespace dragonBones.phaser.display {
                         }
                     }
 
-                    meshDisplay.fakeVertices[iD++] = xG;
-                    meshDisplay.fakeVertices[iD++] = yG;
+                    meshDisplay.vertices[iD].x = xG;
+                    meshDisplay.vertices[iD].y = yG;
+                    iD += 1;
                 }
             }
             else {
@@ -277,27 +284,27 @@ namespace dragonBones.phaser.display {
                     vertexOffset += 65536; // Fixed out of bouds bug.
                 }
 
-                for (let i = 0, l = vertexCount * 2; i < l; i += 2) {
-                    let x = floatArray[vertexOffset + i] * scale;
-                    let y = floatArray[vertexOffset + i + 1] * scale;
+                for (let i = 0; i < vertexCount; ++i) {
+                    let x = floatArray[vertexOffset + 2 * i] * scale;
+                    let y = floatArray[vertexOffset + 2 * i + 1] * scale;
 
                     if (hasDeform) {
-                        x += deformVertices[i];
-                        y += deformVertices[i + 1];
+                        x += deformVertices[2 * i];
+                        y += deformVertices[2 * i + 1];
                     }
 
                     if (isSurface) {
                         const matrix = (this._parent as Surface)._getGlobalTransformMatrix(x, y);
-                        meshDisplay.fakeVertices[i] = matrix.a * x + matrix.c * y + matrix.tx;
-                        meshDisplay.fakeVertices[i + 1] = matrix.b * x + matrix.d * y + matrix.ty;
+                        meshDisplay.vertices[i].x = matrix.a * x + matrix.c * y + matrix.tx;
+                        meshDisplay.vertices[i].y = matrix.b * x + matrix.d * y + matrix.ty;
                     }
                     else {
-                        meshDisplay.fakeVertices[i] = x;
-                        meshDisplay.fakeVertices[i + 1] = y;
+                        meshDisplay.vertices[i].x = x;
+                        meshDisplay.vertices[i].y = y;
                     }
                 }
             }
-            meshDisplay.updateVertices();
+            // meshDisplay.updateVertices();
         }
 
         protected _updateTransform(): void {

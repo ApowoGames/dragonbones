@@ -13,8 +13,8 @@ namespace dragonBones.phaser.plugin {
 
             if (this.game.config.renderType === Phaser.WEBGL) {
                 const renderer = this.game.renderer as Phaser.Renderer.WebGL.WebGLRenderer;
-                if (!renderer.hasPipeline('PhaserTextureTintPipeline'))
-                    renderer.addPipeline('PhaserTextureTintPipeline', new pipeline.TextureTintPipeline({ game, renderer }));
+                if (!renderer.pipelines.has('PhaserTextureTintPipeline'))
+                    renderer.pipelines.add('PhaserTextureTintPipeline', new pipeline.TextureTintPipeline({ game }));
             }
 
             // Add dragonBones only
@@ -106,9 +106,10 @@ namespace dragonBones.phaser.plugin {
             textureURL?: string,
             atlasURL?: string,
             boneURL?: string,
-            textureXhrSettings?: XHRSettingsObject,
-            atlasXhrSettings?: XHRSettingsObject,
-            boneXhrSettings?: XHRSettingsObject) {
+            textureXhrSettings?: any,  // XHRSettingsObject,
+            atlasXhrSettings?: any,  // XHRSettingsObject,
+            boneXhrSettings?: any,  // XHRSettingsObject) {
+    ) {
         const multifile = new DragonBonesFile(this, dragonbonesName, textureURL, atlasURL, boneURL, textureXhrSettings, atlasXhrSettings, boneXhrSettings);
         this.addFile(multifile.files);
 

@@ -36,8 +36,8 @@ namespace dragonBones.phaser {
 
         protected _buildSlot(dataPackage: BuildArmaturePackage, slotData: SlotData, armature: Armature): Slot {
             const slot = BaseObject.borrowObject(display.Slot);
-            const rawDisplay = this._scene.dragonbone.createSlotDisplayPlaceholder();
-            const meshDisplay = this._scene.dragonbone.createMeshDisplayPlaceholder();
+            const rawDisplay = (this._scene as any).dragonbone.createSlotDisplayPlaceholder();
+            const meshDisplay = (this._scene as any).dragonbone.createMeshDisplayPlaceholder();
             slot.init(slotData, armature, rawDisplay, meshDisplay);
 
             return slot;

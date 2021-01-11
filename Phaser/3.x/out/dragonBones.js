@@ -15540,35 +15540,15 @@ var dragonBones;
             var SlotMesh = /** @class */ (function (_super) {
                 __extends(SlotMesh, _super);
                 function SlotMesh(scene, x, y, vertices, uv, colors, alphas, texture, frame) {
-                    var _this = _super.call(this, scene, x, y, vertices, uv, colors, alphas, texture, frame) || this;
+                    var _this = this;
+                    var containsZ = null;
+                    var normals = null;
+                    _this = _super.call(this, scene, x, y, texture, frame, vertices, uv, containsZ, normals, colors, alphas) || this;
                     _this.setPipeline("PhaserTextureTintPipeline"); // use customized pipeline
                     return _this;
                 }
                 SlotMesh.prototype.setTint = function (topLeft, topRight, bottomLeft, bottomRight) {
                     // NOTHING
-                };
-                SlotMesh.prototype.updateVertices = function () {
-                    var fakeIndices = this.fakeIndices;
-                    var fakeVertices = this.fakeVertices;
-                    var fakeUvs = this.fakeUvs;
-                    this.vertices = new Float32Array(fakeIndices.length * 2);
-                    this.uv = new Float32Array(fakeIndices.length * 2);
-                    this.alphas = new Uint32Array(fakeIndices.length);
-                    this.colors = new Uint32Array(fakeIndices.length);
-                    for (var i = 0; i < fakeIndices.length; i++) {
-                        this.vertices[i * 2] = fakeVertices[fakeIndices[i] * 2];
-                        this.vertices[i * 2 + 1] = fakeVertices[fakeIndices[i] * 2 + 1];
-                        this.uv[i * 2] = fakeUvs[fakeIndices[i] * 2];
-                        this.uv[i * 2 + 1] = fakeUvs[fakeIndices[i] * 2 + 1];
-                        this.alphas[i] = 1.0;
-                        this.colors[i] = 0xFFFFFF;
-                    }
-                    // this.tintFill = true;
-                    // for (let i = 0; i < fakeIndices.length / 3; i++) {
-                    //     this.colors[i * 3] = 0xFF0000;
-                    //     this.colors[i * 3 + 1] = 0x00FF00;
-                    //     this.colors[i * 3 + 2] = 0x0000FF;
-                    // }
                 };
                 return SlotMesh;
             }(Phaser.GameObjects.Mesh));
@@ -15711,37 +15691,38 @@ var dragonBones;
                                 var triangleCount = intArray[this._geometryData.offset + 1 /* GeometryTriangleCount */];
                                 var vertexOffset = intArray[this._geometryData.offset + 2 /* GeometryFloatOffset */];
                                 if (vertexOffset < 0) {
-                                    vertexOffset += 65536; // Fixed out of bouds bug.
+                                    vertexOffset += 65536; // Fixed out of bounds bug.
                                 }
                                 var uvOffset = vertexOffset + vertexCount * 2;
                                 var scale = this._armature._armatureData.scale;
                                 var meshDisplay = this._renderDisplay;
                                 var region = currentTextureData.region;
-                                meshDisplay.fakeVertices = new Float32Array(vertexCount * 2);
-                                meshDisplay.fakeUvs = new Float32Array(vertexCount * 2);
-                                meshDisplay.fakeIndices = new Uint16Array(triangleCount * 3);
+                                var fakeVertices = []; // new Float32Array(vertexCount * 2) as any;
+                                var fakeUvs = []; // new Float32Array(vertexCount * 2) as any;
+                                var fakeIndices = []; // new Uint16Array(triangleCount * 3);
                                 for (var i = 0, l = vertexCount * 2; i < l; ++i) {
-                                    meshDisplay.fakeVertices[i] = floatArray[vertexOffset + i] * scale;
+                                    fakeVertices[i] = floatArray[vertexOffset + i] * scale;
                                 }
                                 for (var i = 0; i < triangleCount * 3; ++i) {
-                                    meshDisplay.fakeIndices[i] = intArray[this._geometryData.offset + 4 /* GeometryVertexIndices */ + i];
+                                    fakeIndices[i] = intArray[this._geometryData.offset + 4 /* GeometryVertexIndices */ + i];
                                 }
                                 for (var i = 0, l = vertexCount * 2; i < l; i += 2) {
                                     var u = floatArray[uvOffset + i];
                                     var v = floatArray[uvOffset + i + 1];
                                     if (currentTextureData.rotated) {
-                                        meshDisplay.fakeUvs[i] = (region.x + (1.0 - v) * region.width) / currentTextureAtlasData.width;
-                                        meshDisplay.fakeUvs[i + 1] = (region.y + u * region.height) / currentTextureAtlasData.height;
+                                        fakeUvs[i] = (region.x + (1.0 - v) * region.width) / currentTextureAtlasData.width;
+                                        fakeUvs[i + 1] = (region.y + u * region.height) / currentTextureAtlasData.height;
                                     }
                                     else {
-                                        meshDisplay.fakeUvs[i] = (region.x + u * region.width) / currentTextureAtlasData.width;
-                                        meshDisplay.fakeUvs[i + 1] = (region.y + v * region.height) / currentTextureAtlasData.height;
+                                        fakeUvs[i] = (region.x + u * region.width) / currentTextureAtlasData.width;
+                                        fakeUvs[i + 1] = (region.y + v * region.height) / currentTextureAtlasData.height;
                                     }
                                 }
+                                meshDisplay.clear();
+                                meshDisplay.addVertices(fakeVertices, fakeUvs, fakeIndices);
                                 this._textureScale = 1.0;
                                 meshDisplay.texture = frame.texture;
                                 meshDisplay.frame = frame;
-                                meshDisplay.updateVertices();
                                 var isSkinned = this._geometryData.weight !== null;
                                 var isSurface = this._parent._boneData.type !== 0 /* Bone */;
                                 if (isSkinned || isSurface) {
@@ -15749,20 +15730,24 @@ var dragonBones;
                                 }
                             }
                             else { // normal texture.
-                                this._renderDisplay.texture = frame.texture;
-                                this._renderDisplay.frame = frame;
-                                this._renderDisplay.setDisplayOrigin(this._pivotX, this._pivotY);
+                                var renderDisplay = this._renderDisplay; // SlotImage | SlotSprite;
+                                renderDisplay.texture = frame.texture;
+                                renderDisplay.frame = frame;
+                                renderDisplay.setDisplayOrigin(this._pivotX, this._pivotY);
                                 this._textureScale = currentTextureData.parent.scale * this.armature.armatureData.scale;
-                                this._renderDisplay.setScale(this._textureScale);
+                                renderDisplay.setScale(this._textureScale);
                             }
                             this._visibleDirty = true;
                             return;
                         }
                     }
-                    else {
-                        this._renderDisplay.x = 0.0;
-                        this._renderDisplay.y = 0.0;
-                        this._renderDisplay.setTexture(undefined);
+                    else { // nothing to show.
+                        var renderDisplay = this._renderDisplay; // SlotImage | SlotSprite;
+                        renderDisplay.x = 0.0;
+                        renderDisplay.y = 0.0;
+                        if (renderDisplay.setTexture) {
+                            renderDisplay.setTexture(undefined);
+                        }
                     }
                 };
                 Slot.prototype._updateMesh = function () {
@@ -15801,8 +15786,9 @@ var dragonBones;
                                     yG += (matrix.b * xL + matrix.d * yL + matrix.ty) * weight;
                                 }
                             }
-                            meshDisplay.fakeVertices[iD++] = xG;
-                            meshDisplay.fakeVertices[iD++] = yG;
+                            meshDisplay.vertices[iD].x = xG;
+                            meshDisplay.vertices[iD].y = yG;
+                            iD += 1;
                         }
                     }
                     else {
@@ -15815,25 +15801,25 @@ var dragonBones;
                         if (vertexOffset < 0) {
                             vertexOffset += 65536; // Fixed out of bouds bug.
                         }
-                        for (var i = 0, l = vertexCount * 2; i < l; i += 2) {
-                            var x = floatArray[vertexOffset + i] * scale;
-                            var y = floatArray[vertexOffset + i + 1] * scale;
+                        for (var i = 0; i < vertexCount; ++i) {
+                            var x = floatArray[vertexOffset + 2 * i] * scale;
+                            var y = floatArray[vertexOffset + 2 * i + 1] * scale;
                             if (hasDeform) {
-                                x += deformVertices[i];
-                                y += deformVertices[i + 1];
+                                x += deformVertices[2 * i];
+                                y += deformVertices[2 * i + 1];
                             }
                             if (isSurface) {
                                 var matrix = this._parent._getGlobalTransformMatrix(x, y);
-                                meshDisplay.fakeVertices[i] = matrix.a * x + matrix.c * y + matrix.tx;
-                                meshDisplay.fakeVertices[i + 1] = matrix.b * x + matrix.d * y + matrix.ty;
+                                meshDisplay.vertices[i].x = matrix.a * x + matrix.c * y + matrix.tx;
+                                meshDisplay.vertices[i].y = matrix.b * x + matrix.d * y + matrix.ty;
                             }
                             else {
-                                meshDisplay.fakeVertices[i] = x;
-                                meshDisplay.fakeVertices[i + 1] = y;
+                                meshDisplay.vertices[i].x = x;
+                                meshDisplay.vertices[i].y = y;
                             }
                         }
                     }
-                    meshDisplay.updateVertices();
+                    // meshDisplay.updateVertices();
                 };
                 Slot.prototype._updateTransform = function () {
                     this.updateGlobalTransform();
@@ -15940,98 +15926,9 @@ var dragonBones;
         (function (pipeline) {
             var TextureTintPipeline = /** @class */ (function (_super) {
                 __extends(TextureTintPipeline, _super);
-                function TextureTintPipeline(config) {
-                    var _this = _super.call(this, config) || this;
-                    _this._tempMatrix1 = new phaser.util.TransformMatrix();
-                    _this._tempMatrix2 = new phaser.util.TransformMatrix();
-                    _this._tempMatrix3 = new phaser.util.TransformMatrix();
-                    return _this;
+                function TextureTintPipeline() {
+                    return _super !== null && _super.apply(this, arguments) || this;
                 }
-                TextureTintPipeline.prototype.batchSprite = function (sprite, camera, parentTransformMatrix) {
-                    this.renderer.setPipeline(this);
-                    var camMatrix = this._tempMatrix1;
-                    var spriteMatrix = this._tempMatrix2;
-                    var calcMatrix = this._tempMatrix3;
-                    var frame = sprite.frame;
-                    var texture = frame.glTexture;
-                    var u0 = frame.u0;
-                    var v0 = frame.v0;
-                    var u1 = frame.u1;
-                    var v1 = frame.v1;
-                    var frameX = frame.x;
-                    var frameY = frame.y;
-                    var frameWidth = frame.width;
-                    var frameHeight = frame.height;
-                    var x = -sprite.displayOriginX + frameX;
-                    var y = -sprite.displayOriginY + frameY;
-                    if (sprite.isCropped) {
-                        var crop = sprite["_crop"];
-                        if (crop.flipX !== sprite.flipX || crop.flipY !== sprite.flipY)
-                            frame.updateCropUVs(crop, sprite.flipX, sprite.flipY);
-                        u0 = crop.u0;
-                        v0 = crop.v0;
-                        u1 = crop.u1;
-                        v1 = crop.v1;
-                        frameWidth = crop.width;
-                        frameHeight = crop.height;
-                        frameX = crop.x;
-                        frameY = crop.y;
-                        x = -sprite.displayOriginX + frameX;
-                        y = -sprite.displayOriginY + frameY;
-                    }
-                    if (sprite.flipX) {
-                        x += frameWidth;
-                        frameWidth *= -1;
-                    }
-                    if (sprite.flipY) {
-                        y += frameHeight;
-                        frameHeight *= -1;
-                    }
-                    var xw = x + frameWidth;
-                    var yh = y + frameHeight;
-                    spriteMatrix.applyITRSC(sprite.x, sprite.y, sprite.rotation, sprite.scaleX, sprite.scaleY, sprite["skewX"] || 0, sprite["skewY"] || 0);
-                    camMatrix.copyFrom(camera["matrix"]);
-                    if (parentTransformMatrix) {
-                        //  Multiply the camera by the parent matrix
-                        camMatrix.multiplyWithOffset(parentTransformMatrix, -camera.scrollX * sprite.scrollFactorX, -camera.scrollY * sprite.scrollFactorY);
-                        //  Undo the camera scroll
-                        spriteMatrix.e = sprite.x;
-                        spriteMatrix.f = sprite.y;
-                        //  Multiply by the Sprite matrix, store result in calcMatrix
-                        camMatrix.multiply(spriteMatrix, calcMatrix);
-                    }
-                    else {
-                        spriteMatrix.e -= camera.scrollX * sprite.scrollFactorX;
-                        spriteMatrix.f -= camera.scrollY * sprite.scrollFactorY;
-                        //  Multiply by the Sprite matrix, store result in calcMatrix
-                        camMatrix.multiply(spriteMatrix, calcMatrix);
-                    }
-                    var tx0 = calcMatrix.getX(x, y);
-                    var ty0 = calcMatrix.getY(x, y);
-                    var tx1 = calcMatrix.getX(x, yh);
-                    var ty1 = calcMatrix.getY(x, yh);
-                    var tx2 = calcMatrix.getX(xw, yh);
-                    var ty2 = calcMatrix.getY(xw, yh);
-                    var tx3 = calcMatrix.getX(xw, y);
-                    var ty3 = calcMatrix.getY(xw, y);
-                    var tintTL = Phaser.Renderer.WebGL.Utils.getTintAppendFloatAlpha(sprite["_tintTL"], camera.alpha * sprite["_alphaTL"]);
-                    var tintTR = Phaser.Renderer.WebGL.Utils.getTintAppendFloatAlpha(sprite["_tintTR"], camera.alpha * sprite["_alphaTR"]);
-                    var tintBL = Phaser.Renderer.WebGL.Utils.getTintAppendFloatAlpha(sprite["_tintBL"], camera.alpha * sprite["_alphaBL"]);
-                    var tintBR = Phaser.Renderer.WebGL.Utils.getTintAppendFloatAlpha(sprite["_tintBR"], camera.alpha * sprite["_alphaBR"]);
-                    if (camera.roundPixels) {
-                        tx0 |= 0;
-                        ty0 |= 0;
-                        tx1 |= 0;
-                        ty1 |= 0;
-                        tx2 |= 0;
-                        ty2 |= 0;
-                        tx3 |= 0;
-                        ty3 |= 0;
-                    }
-                    this.setTexture2D(texture, 0);
-                    var tintEffect = (sprite["_isTinted"] && sprite.tintFill);
-                    this.batchQuad(tx0, ty0, tx1, ty1, tx2, ty2, tx3, ty3, u0, v0, u1, v1, tintTL, tintTR, tintBL, tintBR, tintEffect);
-                };
                 return TextureTintPipeline;
             }(Phaser.Renderer.WebGL.Pipelines.MultiPipeline));
             pipeline.TextureTintPipeline = TextureTintPipeline;
@@ -16071,7 +15968,9 @@ var dragonBones;
         (function (plugin) {
             var DragonBonesFile = /** @class */ (function (_super) {
                 __extends(DragonBonesFile, _super);
-                function DragonBonesFile(loader, key, textureURL, atlasURL, boneURL, textureXhrSettings, atlasXhrSettings, boneXhrSettings) {
+                function DragonBonesFile(loader, key, textureURL, atlasURL, boneURL, textureXhrSettings, // XHRSettingsObject,
+                atlasXhrSettings, // XHRSettingsObject,
+                boneXhrSettings) {
                     var _this = this;
                     var image;
                     var data;
@@ -16080,7 +15979,7 @@ var dragonBones;
                     var binFileType = plugin.FileTypes.getType(plugin.FileTypes.BINARY);
                     var jsonFileType = plugin.FileTypes.getType(plugin.FileTypes.JSON);
                     var imageFileType = plugin.FileTypes.getType(plugin.FileTypes.IMAGE);
-                    var createBoneFileByType = function (loader, key, boneURL, boneXhrSettings) {
+                    var createBoneFileByType = function (loader, key, boneURL, boneXhrSettings /*XHRSettingsObject*/) {
                         var type = "json";
                         if (boneXhrSettings && boneXhrSettings.responseType) {
                             switch (boneXhrSettings.responseType) {
@@ -16158,8 +16057,8 @@ var dragonBones;
                     game.cache.addCustom("dragonbone");
                     if (_this.game.config.renderType === Phaser.WEBGL) {
                         var renderer = _this.game.renderer;
-                        if (!renderer.hasPipeline('PhaserTextureTintPipeline'))
-                            renderer.addPipeline('PhaserTextureTintPipeline', new phaser.pipeline.TextureTintPipeline({ game: game, renderer: renderer }));
+                        if (!renderer.pipelines.has('PhaserTextureTintPipeline'))
+                            renderer.pipelines.add('PhaserTextureTintPipeline', new phaser.pipeline.TextureTintPipeline({ game: game }));
                     }
                     // Add dragonBones only
                     pluginManager.registerGameObject("dragonBones", CreateDragonBonesRegisterHandler);
@@ -16237,7 +16136,9 @@ var dragonBones;
             var CreateArmatureRegisterHandler = function (armature, dragonBones, skinName, atlasTextureName) {
                 return this.scene.dragonbone.createArmature(armature, dragonBones, skinName, atlasTextureName);
             };
-            var DragonBoneFileRegisterHandler = function (dragonbonesName, textureURL, atlasURL, boneURL, textureXhrSettings, atlasXhrSettings, boneXhrSettings) {
+            var DragonBoneFileRegisterHandler = function (dragonbonesName, textureURL, atlasURL, boneURL, textureXhrSettings, // XHRSettingsObject,
+            atlasXhrSettings, // XHRSettingsObject,
+            boneXhrSettings) {
                 var multifile = new plugin.DragonBonesFile(this, dragonbonesName, textureURL, atlasURL, boneURL, textureXhrSettings, atlasXhrSettings, boneXhrSettings);
                 this.addFile(multifile.files);
                 return this;

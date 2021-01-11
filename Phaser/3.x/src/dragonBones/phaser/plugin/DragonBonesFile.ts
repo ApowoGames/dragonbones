@@ -5,9 +5,10 @@ namespace dragonBones.phaser.plugin {
                     textureURL?: string,
                     atlasURL?: string,
                     boneURL?: string,
-                    textureXhrSettings?: XHRSettingsObject,
-                    atlasXhrSettings?: XHRSettingsObject,
-                    boneXhrSettings?: XHRSettingsObject) {
+                    textureXhrSettings?: any,  // XHRSettingsObject,
+                    atlasXhrSettings?: any,  // XHRSettingsObject,
+                    boneXhrSettings?: any,  // XHRSettingsObject) {
+        ) {
             let image: Phaser.Loader.FileTypes.ImageFile;
             let data: Phaser.Loader.FileTypes.JSONFile;
             let boneData: Phaser.Loader.File;
@@ -18,7 +19,7 @@ namespace dragonBones.phaser.plugin {
             const jsonFileType = FileTypes.getType(FileTypes.JSON);
             const imageFileType = FileTypes.getType(FileTypes.IMAGE);
 
-            const createBoneFileByType = (loader: Phaser.Loader.LoaderPlugin, key: string, boneURL: string, boneXhrSettings?: XHRSettingsObject): Phaser.Loader.File => {
+            const createBoneFileByType = (loader: Phaser.Loader.LoaderPlugin, key: string, boneURL: string, boneXhrSettings?: any /*XHRSettingsObject*/): Phaser.Loader.File => {
                 let type = "json";
                 if (boneXhrSettings && boneXhrSettings.responseType) {
                     switch (boneXhrSettings.responseType) {

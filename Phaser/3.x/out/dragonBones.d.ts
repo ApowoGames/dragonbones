@@ -291,6 +291,10 @@ declare namespace dragonBones {
         readonly eventManager: IEventDispatcher;
     }
 }
+declare var __extends: any;
+declare var exports: any;
+declare var module: any;
+declare var define: any;
 /**
  * The MIT License (MIT)
  *
@@ -6255,6 +6259,7 @@ declare namespace dragonBones.phaser.util {
 }
 declare namespace dragonBones.phaser.util {
     class TransformMatrix extends Phaser.GameObjects.Components.TransformMatrix {
+        decomposedMatrix: any;
         constructor(a?: number, b?: number, c?: number, d?: number, tx?: number, ty?: number);
         decomposeMatrix(): any;
         applyITRSC(x: number, y: number, rotation: number, scaleX: number, scaleY: number, skewX: number, skewY: number): this;
@@ -6299,6 +6304,7 @@ declare namespace dragonBones.phaser.display {
         removeDBEventListener(type: EventStringType, listener: (event: EventObject) => void, scope?: any): void;
         readonly armature: Armature;
         readonly animation: Animation;
+        getBounds(output?: Phaser.Geom.Rectangle): Phaser.Geom.Rectangle;
     }
 }
 declare namespace dragonBones.phaser.display {
@@ -6309,6 +6315,15 @@ declare namespace dragonBones.phaser.display {
 declare namespace dragonBones.phaser.display {
     class SlotSprite extends Phaser.GameObjects.Sprite {
         constructor(scene: Phaser.Scene, x: number, y: number, texture?: string, frame?: string | number);
+    }
+}
+declare namespace dragonBones.phaser.display {
+    class SlotMesh extends Phaser.GameObjects.Mesh {
+        fakeIndices: Uint16Array;
+        fakeVertices: Uint16Array;
+        fakeUvs: Uint16Array;
+        constructor(scene: Phaser.Scene, x: number, y: number, vertices: number[], uv: number[], colors: number[], alphas: number[], texture: string, frame?: string | integer);
+        setTint(topLeft?: integer, topRight?: integer, bottomLeft?: integer, bottomRight?: integer): void;
     }
 }
 declare namespace dragonBones.phaser.display {
@@ -6323,6 +6338,7 @@ declare namespace dragonBones.phaser.display {
         protected _addDisplay(): void;
         protected _replaceDisplay(prevDisplay: any): void;
         protected _removeDisplay(): void;
+        protected _updateDisplayData(): void;
         protected _updateZOrder(): void;
         _updateVisible(): void;
         protected _updateBlendMode(): void;
@@ -6348,12 +6364,7 @@ declare namespace dragonBones.phaser.display {
     }
 }
 declare namespace dragonBones.phaser.pipeline {
-    class TextureTintPipeline extends Phaser.Renderer.WebGL.Pipelines.TextureTintPipeline {
-        private _tempMatrix1;
-        private _tempMatrix2;
-        private _tempMatrix3;
-        constructor(config: any);
-        batchSprite(sprite: Phaser.GameObjects.Image | Phaser.GameObjects.Sprite, camera: Phaser.Cameras.Scene2D.Camera, parentTransformMatrix: Phaser.GameObjects.Components.TransformMatrix): void;
+    class TextureTintPipeline extends Phaser.Renderer.WebGL.Pipelines.MultiPipeline {
     }
 }
 declare namespace dragonBones.phaser.plugin {
@@ -6375,7 +6386,9 @@ declare namespace dragonBones.phaser.plugin {
 }
 declare namespace dragonBones.phaser.plugin {
     class DragonBonesFile extends Phaser.Loader.MultiFile {
-        constructor(loader: Phaser.Loader.LoaderPlugin, key: string | object, textureURL?: string, atlasURL?: string, boneURL?: string, textureXhrSettings?: XHRSettingsObject, atlasXhrSettings?: XHRSettingsObject, boneXhrSettings?: XHRSettingsObject);
+        constructor(loader: Phaser.Loader.LoaderPlugin, key: string | object, textureURL?: string, atlasURL?: string, boneURL?: string, textureXhrSettings?: any, // XHRSettingsObject,
+        atlasXhrSettings?: any, // XHRSettingsObject,
+        boneXhrSettings?: any);
         addToCache(): void;
     }
 }
@@ -6385,6 +6398,7 @@ declare namespace dragonBones.phaser.plugin {
         protected _factory: Factory;
         constructor(scene: Phaser.Scene, pluginManager: Phaser.Plugins.PluginManager);
         createArmature(armature: string, dragonBones?: string, skinName?: string, atlasTextureName?: string, textureScale?: number): display.ArmatureDisplay;
+        createDragonBones(dragonBonesName: string, textureScale?: number): DragonBonesData;
         readonly factory: Factory;
         createSlotDisplayPlaceholder(): display.SlotImage | display.SlotSprite;
         boot(): void;
@@ -6392,6 +6406,7 @@ declare namespace dragonBones.phaser.plugin {
         private update;
         shutdown(): void;
         destroy(): void;
+        createMeshDisplayPlaceholder(): Phaser.GameObjects.Mesh;
     }
 }
 declare namespace dragonBones.phaser {
@@ -6403,6 +6418,14 @@ declare namespace dragonBones.phaser {
         protected _buildTextureAtlasData(textureAtlasData: display.TextureAtlasData, textureAtlas: Phaser.Textures.Texture): TextureAtlasData;
         protected _buildArmature(dataPackage: BuildArmaturePackage): Armature;
         protected _buildSlot(dataPackage: BuildArmaturePackage, slotData: SlotData, armature: Armature): Slot;
-        buildArmatureDisplay(armatureName: string, dragonBonesName?: string, skinName?: string, textureAtlasName?: string, textureScale?: number): display.ArmatureDisplay;
+        buildArmatureDisplay(armatureName: string, dragonBonesName: string, skinName?: string, textureAtlasName?: string, textureScale?: number): display.ArmatureDisplay;
+        buildDragonBonesData(dragonBonesName: string, textureScale?: number): DragonBonesData;
+        /**
+         * - A global sound event manager.
+         * Sound events can be listened to uniformly from the manager.
+         * @version DragonBones 4.5
+         * @language en_US
+         */
+        readonly soundEventManager: display.ArmatureDisplay;
     }
 }
