@@ -16,7 +16,34 @@ namespace dragonBones.phaser.util {
             sy = sy === void 0 ? sx : sy;
             this._skewX = sx;
             this._skewY = sy;
-        }
+        },
+        getLocalTransformMatrix(tempMatrix) {
+            if (tempMatrix === undefined) { tempMatrix = new TransformMatrix(); }
+            // THIS IS THE PURPOSE OF THE OVERRIDE: applyITRSC vs applyITRS.
+            return tempMatrix.applyITRSC(this.x, this.y, this._rotation, this._scaleX, this._scaleY, this.skewX, this.skewY);
+        },
+        getWorldTransformMatrix(tempMatrix, parentMatrix) {
+            if (tempMatrix === undefined) { tempMatrix = new TransformMatrix(); }
+            if (parentMatrix === undefined) { parentMatrix = new TransformMatrix(); }
+            var parent = this.parentContainer;
+
+            if (!parent)
+            {
+                return this.getLocalTransformMatrix(tempMatrix);
+            }
+
+            // THIS IS THE PURPOSE OF THE OVERRIDE: applyITRSC vs applyITRS & using getLocalTransformMatrix to dodge incompatibilities between those two methods (since we don't know if our parents are smart enough to know how to skew).
+            tempMatrix = this.getLocalTransformMatrix(tempMatrix);
+            while (parent)
+            {
+                parentMatrix = parent.getLocalTransformMatrix(parentMatrix);
+                parentMatrix.multiply(tempMatrix, tempMatrix);
+
+                parent = parent.parentContainer;
+            }
+
+            return tempMatrix;
+        },
     };
 
     export const extendSkew = function(clazz: any): void {
@@ -33,5 +60,7 @@ namespace dragonBones.phaser.util {
             configurable: true
         });
         clazz.prototype.setSkew = Skew.setSkew;
-    };
+        clazz.prototype.getLocalTransformMatrix = Skew.getLocalTransformMatrix;
+        clazz.prototype.getWorldTransformMatrix = Skew.getWorldTransformMatrix;
+    }
 }

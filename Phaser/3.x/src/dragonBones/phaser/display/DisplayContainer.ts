@@ -8,6 +8,7 @@ namespace dragonBones.phaser.display {
         constructor(scene: Phaser.Scene, x?: number, y?: number, children?: Phaser.GameObjects.GameObject[]) {
             super(scene, x, y, children);
             this.tempTransformMatrix = new util.TransformMatrix();
+            this.setSize(1024, 1024);
         }
 
         pointToContainer(source: Phaser.Math.Vector2 | Phaser.Geom.Point | { x?: number, y?: number},
@@ -29,29 +30,7 @@ namespace dragonBones.phaser.display {
 
             return output;
         }
-
-        get skewX(): number {
-            return this._skewX;
-        }
-
-        set skewX(v: number) {
-            this._skewX = v;
-        }
-
-        get skewY(): number {
-            return this._skewY;
-        }
-
-        set skewY(v: number) {
-            this._skewY = v;
-        }
-
-        setSkew(sx: number, sy?: number): this {
-            sy = sy === void 0 ? sx : sy;
-            this.skewX = sx;
-            this.skewY = sy;
-
-            return this;
-        }
     }
+
+    util.extendSkew(DisplayContainer);  // skew mixin
 }

@@ -6254,6 +6254,8 @@ declare namespace dragonBones.phaser.util {
         getSkewY(): number;
         setSkewY(v: number): void;
         setSkew(sx: number, sy?: number): void;
+        getLocalTransformMatrix(tempMatrix: any): any;
+        getWorldTransformMatrix(tempMatrix: any, parentMatrix: any): any;
     };
     const extendSkew: (clazz: any) => void;
 }
@@ -6265,6 +6267,7 @@ declare namespace dragonBones.phaser.util {
         applyITRSC(x: number, y: number, rotation: number, scaleX: number, scaleY: number, skewX: number, skewY: number): this;
         readonly skewX: number;
         readonly skewY: number;
+        skew(sx: number, sy: number): this;
     }
 }
 declare namespace dragonBones.phaser.display {
@@ -6283,9 +6286,6 @@ declare namespace dragonBones.phaser.display {
             x?: number;
             y?: number;
         };
-        skewX: number;
-        skewY: number;
-        setSkew(sx: number, sy?: number): this;
     }
 }
 declare namespace dragonBones.phaser.display {
@@ -6361,10 +6361,6 @@ declare namespace dragonBones.phaser.display {
         static toString(): string;
         renderTexture: Phaser.Textures.Frame;
         protected _onClear(): void;
-    }
-}
-declare namespace dragonBones.phaser.pipeline {
-    class TextureTintPipeline extends Phaser.Renderer.WebGL.Pipelines.MultiPipeline {
     }
 }
 declare namespace dragonBones.phaser.plugin {

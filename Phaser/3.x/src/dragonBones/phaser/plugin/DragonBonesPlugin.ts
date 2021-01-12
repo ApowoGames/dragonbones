@@ -11,11 +11,12 @@ namespace dragonBones.phaser.plugin {
             // bone data store
             game.cache.addCustom("dragonbone");
 
-            if (this.game.config.renderType === Phaser.WEBGL) {
-                const renderer = this.game.renderer as Phaser.Renderer.WebGL.WebGLRenderer;
-                if (!renderer.pipelines.has('PhaserTextureTintPipeline'))
-                    renderer.pipelines.add('PhaserTextureTintPipeline', new pipeline.TextureTintPipeline({ game }));
-            }
+            // See if we even need this, since skew might just *work* if we `lie` through the transform component:
+            //  if (this.game.config.renderType === Phaser.WEBGL) {
+            //      const renderer = this.game.renderer as Phaser.Renderer.WebGL.WebGLRenderer;
+            //      if (!renderer.pipelines.has('PhaserTextureTintPipeline'))
+            //          renderer.pipelines.add('PhaserTextureTintPipeline', new pipeline.TextureTintPipeline({ game }));
+            //  }
 
             // Add dragonBones only
             pluginManager.registerGameObject("dragonBones", CreateDragonBonesRegisterHandler);
