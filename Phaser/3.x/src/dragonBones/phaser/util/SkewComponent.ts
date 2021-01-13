@@ -1,4 +1,5 @@
 namespace dragonBones.phaser.util {
+    /** Methods for handling "skew" or "shear", used in deformation. */
     export const Skew = {
         getSkewX(): number {
             return this._skewX || 0;

@@ -6248,6 +6248,7 @@ declare namespace dragonBones.phaser.util {
     }
 }
 declare namespace dragonBones.phaser.util {
+    /** Methods for handling "skew" or "shear", used in deformation. */
     const Skew: {
         getSkewX(): number;
         setSkewX(v: number): void;
@@ -6361,6 +6362,15 @@ declare namespace dragonBones.phaser.display {
         static toString(): string;
         renderTexture: Phaser.Textures.Frame;
         protected _onClear(): void;
+    }
+}
+declare namespace dragonBones.phaser.pipeline {
+    class SkewPipeline extends Phaser.Renderer.WebGL.Pipelines.MultiPipeline {
+        private _tempMatrix1;
+        private _tempMatrix2;
+        private _tempMatrix3;
+        constructor(config: any);
+        batchSprite(sprite: Phaser.GameObjects.Image | Phaser.GameObjects.Sprite, camera: Phaser.Cameras.Scene2D.Camera, parentTransformMatrix: Phaser.GameObjects.Components.TransformMatrix): void;
     }
 }
 declare namespace dragonBones.phaser.plugin {

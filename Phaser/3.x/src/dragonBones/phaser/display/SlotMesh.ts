@@ -8,7 +8,7 @@ namespace dragonBones.phaser.display {
             const containsZ = null;
             const normals = null;
             super(scene, x, y, texture, frame, vertices, uv, containsZ, normals, colors, alphas);
-            // this.setPipeline("PhaserTextureTintPipeline");  // use customized pipeline
+            this.setPipeline("SkewPipeline");  // use customized pipeline
             this.hideCCW = false;
             this.setOrtho(this.width, this.height);
         }

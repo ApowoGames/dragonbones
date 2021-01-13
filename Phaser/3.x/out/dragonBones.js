@@ -15191,6 +15191,7 @@ var dragonBones;
     (function (phaser) {
         var util;
         (function (util) {
+            /** Methods for handling "skew" or "shear", used in deformation. */
             util.Skew = {
                 getSkewX: function () {
                     return this._skewX || 0;
@@ -15377,7 +15378,6 @@ var dragonBones;
                 ArmatureDisplay.prototype.dbUpdate = function () {
                     // TODO: draw debug graphics
                     if (this.debugDraw) {
-                        console.log('dbUpdate', this);
                     }
                 };
                 ArmatureDisplay.prototype.dispose = function (disposeProxy) {
@@ -15494,8 +15494,9 @@ var dragonBones;
             var SlotImage = /** @class */ (function (_super) {
                 __extends(SlotImage, _super);
                 function SlotImage(scene, x, y, texture, frame) {
-                    return _super.call(this, scene, x, y, texture, frame) || this;
-                    //  this.setPipeline("PhaserTextureTintPipeline");  // use customized pipeline
+                    var _this = _super.call(this, scene, x, y, texture, frame) || this;
+                    _this.setPipeline("SkewPipeline"); // use customized pipeline
+                    return _this;
                 }
                 return SlotImage;
             }(Phaser.GameObjects.Image));
@@ -15513,8 +15514,9 @@ var dragonBones;
             var SlotSprite = /** @class */ (function (_super) {
                 __extends(SlotSprite, _super);
                 function SlotSprite(scene, x, y, texture, frame) {
-                    return _super.call(this, scene, x, y, texture, frame) || this;
-                    //  this.setPipeline("PhaserTextureTintPipeline");  // use customized pipeline
+                    var _this = _super.call(this, scene, x, y, texture, frame) || this;
+                    _this.setPipeline("SkewPipeline"); // use customized pipeline
+                    return _this;
                 }
                 return SlotSprite;
             }(Phaser.GameObjects.Sprite));
@@ -15536,7 +15538,7 @@ var dragonBones;
                     var containsZ = null;
                     var normals = null;
                     _this = _super.call(this, scene, x, y, texture, frame, vertices, uv, containsZ, normals, colors, alphas) || this;
-                    // this.setPipeline("PhaserTextureTintPipeline");  // use customized pipeline
+                    _this.setPipeline("SkewPipeline"); // use customized pipeline
                     _this.hideCCW = false;
                     _this.setOrtho(_this.width, _this.height);
                     return _this;
@@ -15587,7 +15589,7 @@ var dragonBones;
                 };
                 Slot.prototype._replaceDisplay = function (prevDisplay) {
                     if (!this._renderDisplay["setSkew"]) {
-                        console.warn("please call dragonBones.phaser.util.extendSkew to mix skew component into your display object,\n                                and set its pipeline to 'PhaserTextureTintPipeline' by calling 'setPipeline' method, more detail please refer to the 'ReplaceSlotDisplay.ts' example");
+                        console.warn("please call dragonBones.phaser.util.extendSkew to mix skew component into your display object,\n                                and set its pipeline to 'SkewPipeline' by calling 'setPipeline' method, more detail please refer to the 'ReplaceSlotDisplay.ts' example");
                         return;
                     }
                     this.armature.display.replace(prevDisplay, this._renderDisplay);
@@ -15916,6 +15918,126 @@ var dragonBones;
 (function (dragonBones) {
     var phaser;
     (function (phaser) {
+        var pipeline;
+        (function (pipeline) {
+            var SkewPipeline = /** @class */ (function (_super) {
+                __extends(SkewPipeline, _super);
+                function SkewPipeline(config) {
+                    var _this = _super.call(this, config) || this;
+                    _this._tempMatrix1 = new phaser.util.TransformMatrix();
+                    _this._tempMatrix2 = new phaser.util.TransformMatrix();
+                    _this._tempMatrix3 = new phaser.util.TransformMatrix();
+                    return _this;
+                }
+                SkewPipeline.prototype.batchSprite = function (sprite, camera, parentTransformMatrix) {
+                    this.manager.set(this, sprite);
+                    var camMatrix = this._tempMatrix1;
+                    var spriteMatrix = this._tempMatrix2;
+                    var calcMatrix = this._tempMatrix3;
+                    var frame = sprite.frame;
+                    var texture = frame.glTexture;
+                    var u0 = frame.u0;
+                    var v0 = frame.v0;
+                    var u1 = frame.u1;
+                    var v1 = frame.v1;
+                    var frameX = frame.x;
+                    var frameY = frame.y;
+                    var frameWidth = frame.width;
+                    var frameHeight = frame.height;
+                    var customPivot = frame.customPivot;
+                    var displayOriginX = sprite.displayOriginX;
+                    var displayOriginY = sprite.displayOriginY;
+                    var x = -sprite.displayOriginX + frameX;
+                    var y = -sprite.displayOriginY + frameY;
+                    if (sprite.isCropped) {
+                        var crop = sprite["_crop"];
+                        if (crop.flipX !== sprite.flipX || crop.flipY !== sprite.flipY)
+                            frame.updateCropUVs(crop, sprite.flipX, sprite.flipY);
+                        u0 = crop.u0;
+                        v0 = crop.v0;
+                        u1 = crop.u1;
+                        v1 = crop.v1;
+                        frameWidth = crop.width;
+                        frameHeight = crop.height;
+                        frameX = crop.x;
+                        frameY = crop.y;
+                        x = -sprite.displayOriginX + frameX;
+                        y = -sprite.displayOriginY + frameY;
+                    }
+                    var flipX = 1;
+                    var flipY = 1;
+                    if (sprite.flipX) {
+                        if (!customPivot) {
+                            x += (-frame.realWidth + (displayOriginX * 2));
+                        }
+                        flipX = -1;
+                        x += frameWidth;
+                        frameWidth *= -1;
+                    }
+                    // Auto-invert the flipY if this is coming from a GLTexture
+                    // TS note: WebGLTexture is a real standard object, with no fixed fields.
+                    // I guess TextureManager (?) imprints the flipY property onto it?
+                    // Anyway, this confuses TS.
+                    if (sprite.flipY || (frame.source.isGLTexture && texture.flipY)) {
+                        if (!customPivot) {
+                            y += (-frame.realHeight + (displayOriginY * 2));
+                        }
+                        flipY = -1;
+                    }
+                    // This override exists only for this line: in the original, this call doesn't respect skew; this one should.
+                    spriteMatrix.applyITRSC(sprite.x, sprite.y, sprite.rotation, sprite.scaleX * flipX, sprite.scaleY * flipY, sprite["skewX"] || 0, sprite["skewY"] || 0);
+                    // TS note: Matrix is a private field -- not protected etc -- so this needs casting to extract.
+                    camMatrix.copyFrom(camera.matrix);
+                    if (parentTransformMatrix) {
+                        //  Multiply the camera by the parent matrix
+                        camMatrix.multiplyWithOffset(parentTransformMatrix, -camera.scrollX * sprite.scrollFactorX, -camera.scrollY * sprite.scrollFactorY);
+                        //  Undo the camera scroll
+                        spriteMatrix.e = sprite.x;
+                        spriteMatrix.f = sprite.y;
+                    }
+                    else {
+                        spriteMatrix.e -= camera.scrollX * sprite.scrollFactorX;
+                        spriteMatrix.f -= camera.scrollY * sprite.scrollFactorY;
+                    }
+                    //  Multiply by the Sprite matrix, store result in calcMatrix
+                    camMatrix.multiply(spriteMatrix, calcMatrix);
+                    var xw = x + frameWidth;
+                    var yh = y + frameHeight;
+                    var roundPixels = camera.roundPixels;
+                    var tx0 = calcMatrix.getX(x, y);
+                    var ty0 = calcMatrix.getY(x, y);
+                    var tx1 = calcMatrix.getX(x, yh);
+                    var ty1 = calcMatrix.getY(x, yh);
+                    var tx2 = calcMatrix.getX(xw, yh);
+                    var ty2 = calcMatrix.getY(xw, yh);
+                    var tx3 = calcMatrix.getX(xw, y);
+                    var ty3 = calcMatrix.getY(xw, y);
+                    var getTint = Phaser.Renderer.WebGL.Utils.getTintAppendFloatAlpha;
+                    var cameraAlpha = camera.alpha;
+                    // TS Note: _alphaTL etc are private on the Alpha component, so TS gets confused about their use here.
+                    var spriteAlpha = sprite;
+                    var tintTL = getTint(sprite.tintTopLeft, camera.alpha * spriteAlpha._alphaTL);
+                    var tintTR = getTint(sprite.tintTopRight, camera.alpha * spriteAlpha._alphaTR);
+                    var tintBL = getTint(sprite.tintBottomLeft, camera.alpha * spriteAlpha._alphaBL);
+                    var tintBR = getTint(sprite.tintBottomRight, camera.alpha * spriteAlpha._alphaBR);
+                    if (this.shouldFlush(6)) {
+                        this.flush();
+                    }
+                    var unit = this.setGameObject(sprite, frame);
+                    this.manager.preBatch(sprite);
+                    this.batchQuad(sprite, tx0, ty0, tx1, ty1, tx2, ty2, tx3, ty3, u0, v0, u1, v1, tintTL, tintTR, tintBL, tintBR, sprite.tintFill, texture, unit);
+                    this.manager.postBatch(sprite);
+                };
+                return SkewPipeline;
+            }(Phaser.Renderer.WebGL.Pipelines.MultiPipeline));
+            pipeline.SkewPipeline = SkewPipeline;
+        })(pipeline = phaser.pipeline || (phaser.pipeline = {}));
+    })(phaser = dragonBones.phaser || (dragonBones.phaser = {}));
+})(dragonBones || (dragonBones = {}));
+var dragonBones;
+(function (dragonBones) {
+    var phaser;
+    (function (phaser) {
         var plugin;
         (function (plugin) {
             plugin.FileTypes = {
@@ -16032,17 +16154,27 @@ var dragonBones;
                     var game = _this.game;
                     // bone data store
                     game.cache.addCustom("dragonbone");
-                    // See if we even need this, since skew might just *work* if we `lie` through the transform component:
-                    //  if (this.game.config.renderType === Phaser.WEBGL) {
-                    //      const renderer = this.game.renderer as Phaser.Renderer.WebGL.WebGLRenderer;
-                    //      if (!renderer.pipelines.has('PhaserTextureTintPipeline'))
-                    //          renderer.pipelines.add('PhaserTextureTintPipeline', new pipeline.TextureTintPipeline({ game }));
-                    //  }
+                    if (_this.game.config.renderType === Phaser.WEBGL) {
+                        var renderer = _this.game.renderer;
+                        if (!renderer.pipelines.has('SkewPipeline')) {
+                            renderer.pipelines.add('SkewPipeline', new phaser.pipeline.SkewPipeline({ game: game }));
+                        }
+                    }
                     // Add dragonBones only
                     pluginManager.registerGameObject("dragonBones", CreateDragonBonesRegisterHandler);
                     // Add armature, this will add dragonBones when not exist
                     pluginManager.registerGameObject("armature", CreateArmatureRegisterHandler);
                     pluginManager.registerFileType("dragonbone", DragonBoneFileRegisterHandler, scene);
+                    // Just for testing slotImage, slotMesh, and (ugh) slotSprite.
+                    pluginManager.registerGameObject("dbSlotImage", function (x, y, texture, frame) {
+                        return this.displayList.add(new phaser.display.SlotImage(this.scene, x, y, texture, frame));
+                    });
+                    pluginManager.registerGameObject("dbSlotSprite", function (x, y, texture, frame) {
+                        return this.displayList.add(new phaser.display.SlotSprite(this.scene, x, y, texture, frame));
+                    });
+                    pluginManager.registerGameObject("dbSlotMesh", function (x, y, vertices, uv, colors, alphas, texture, frame) {
+                        return this.displayList.add(new phaser.display.SlotMesh(this.scene, x, y, vertices, uv, colors, alphas, texture, frame));
+                    });
                     return _this;
                 }
                 DragonBonesScenePlugin.prototype.createArmature = function (armature, dragonBones, skinName, atlasTextureName, textureScale) {

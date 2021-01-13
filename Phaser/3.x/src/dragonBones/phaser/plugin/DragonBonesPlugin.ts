@@ -11,18 +11,38 @@ namespace dragonBones.phaser.plugin {
             // bone data store
             game.cache.addCustom("dragonbone");
 
-            // See if we even need this, since skew might just *work* if we `lie` through the transform component:
-            //  if (this.game.config.renderType === Phaser.WEBGL) {
-            //      const renderer = this.game.renderer as Phaser.Renderer.WebGL.WebGLRenderer;
-            //      if (!renderer.pipelines.has('PhaserTextureTintPipeline'))
-            //          renderer.pipelines.add('PhaserTextureTintPipeline', new pipeline.TextureTintPipeline({ game }));
-            //  }
+            if (this.game.config.renderType === Phaser.WEBGL) {
+                const renderer = this.game.renderer as Phaser.Renderer.WebGL.WebGLRenderer;
+                if (!renderer.pipelines.has('SkewPipeline')) {
+                    renderer.pipelines.add('SkewPipeline', new pipeline.SkewPipeline({ game }));
+                }
+            }
 
             // Add dragonBones only
             pluginManager.registerGameObject("dragonBones", CreateDragonBonesRegisterHandler);
             // Add armature, this will add dragonBones when not exist
             pluginManager.registerGameObject("armature", CreateArmatureRegisterHandler);
             pluginManager.registerFileType("dragonbone", DragonBoneFileRegisterHandler, scene);
+
+            // Just for testing slotImage, slotMesh, and (ugh) slotSprite.
+            pluginManager.registerGameObject(
+                "dbSlotImage",
+                function (x: number, y: number, texture?: string, frame?: string | number){
+                    return this.displayList.add(new display.SlotImage(this.scene, x, y, texture, frame));
+                }
+            );
+            pluginManager.registerGameObject(
+                "dbSlotSprite",
+                function (x: number, y: number, texture?: string, frame?: string | number) {
+                    return this.displayList.add(new display.SlotSprite(this.scene, x, y, texture, frame));
+                }
+            );
+            pluginManager.registerGameObject(
+                "dbSlotMesh",
+                function (x: number, y: number, vertices: number[], uv: number[], colors: number[], alphas: number[], texture: string, frame?: string | integer) {
+                    return this.displayList.add(new display.SlotMesh(this.scene, x, y, vertices, uv, colors, alphas, texture, frame));
+                }
+            );
         }
 
         createArmature(armature: string, dragonBones?: string, skinName?: string, atlasTextureName?: string, textureScale = 1.0): display.ArmatureDisplay {

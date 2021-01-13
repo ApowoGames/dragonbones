@@ -36,7 +36,7 @@ namespace dragonBones.phaser.display {
         protected _replaceDisplay(prevDisplay: any): void {
             if (!this._renderDisplay["setSkew"]) {
                 console.warn(`please call dragonBones.phaser.util.extendSkew to mix skew component into your display object,
-                                and set its pipeline to 'PhaserTextureTintPipeline' by calling 'setPipeline' method, more detail please refer to the 'ReplaceSlotDisplay.ts' example`);
+                                and set its pipeline to 'SkewPipeline' by calling 'setPipeline' method, more detail please refer to the 'ReplaceSlotDisplay.ts' example`);
                 return;
             }
 
