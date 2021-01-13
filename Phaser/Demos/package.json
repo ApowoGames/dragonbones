@@ -3,8 +3,10 @@
   "version": "5.6.2",
   "main": "",
   "scripts": {
-    "start": "tsc & npm run copyVer3 & anywhere",
-    "copyVer3": "copyfiles -u 3 ../3.x/out/* libs/dragonBones/",
+    "start": "tsc & npm run copy & anywhere",
+    "copy:3": "copyfiles -u 3 ../3.x/out/* libs/dragonBones/",
+    "copy:phaser": "copyfiles -u 5 ../../../phaser/dist/* libs/phaser/",
+    "copy": "npm run copy:3 & npm run copy:phaser",
     "upgradeA": "cd .. & cd 2.x & npm run build & cd .. & cd Demos",
     "upgradeB": "copyfiles -u 3 ../2.x/out/* libs/dragonBones/",
     "upgrade": "npm run upgradeA & npm run upgradeB",
@@ -13,6 +15,8 @@
   "devDependencies": {
     "anywhere": "^1.4.0",
     "copyfiles": "^1.2.0",
-    "typescript": "^2.4.2"
+    "typescript": "^2.4.2",
+    "dragonbones-phaser": "file:../3.x",
+    "phaser": "file:../../../phaser"
   }
 }

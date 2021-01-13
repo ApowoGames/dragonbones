@@ -79,7 +79,7 @@ class ReplaceSlotDisplay extends BaseDemo {
                     const style = { fontSize: 30, color: "#FFFFFF", align: "center" };
                     this._logoText = this.add.text(0.0, 0.0, "Core Element", style);
 
-                    this._logoText.setPipeline("PhaserTextureTintPipeline");  // and use this customized pipeline to support skew
+                    this._logoText.setPipeline("SkewPipeline");  // and use this customized pipeline to support skew
 
                     this._logoText.setOrigin(.5, .5);
                 }

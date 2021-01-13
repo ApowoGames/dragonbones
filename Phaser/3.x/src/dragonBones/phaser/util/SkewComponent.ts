@@ -1,5 +1,10 @@
 namespace dragonBones.phaser.util {
-    /** Methods for handling "skew" or "shear", used in deformation. */
+    /**
+     * Methods for handling "skew" or "shear", used in deformation.
+     *
+     * Necessary because default phaser pipeline doesn't respect it; they explicitly reconstruct transformation matrices.
+     * This is worrisome; 
+     */
     export const Skew = {
         getSkewX(): number {
             return this._skewX || 0;
