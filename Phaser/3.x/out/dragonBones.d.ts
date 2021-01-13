@@ -6248,14 +6248,19 @@ declare namespace dragonBones.phaser.util {
     }
 }
 declare namespace dragonBones.phaser.util {
-    /** Methods for handling "skew" or "shear", used in deformation. */
+    /**
+     * Methods for handling "skew" or "shear", used in deformation.
+     *
+     * Necessary because default phaser pipeline doesn't respect it; they explicitly reconstruct transformation matrices.
+     * This is worrisome;
+     */
     const Skew: {
         getSkewX(): number;
         setSkewX(v: number): void;
         getSkewY(): number;
         setSkewY(v: number): void;
         setSkew(sx: number, sy?: number): void;
-        getLocalTransformMatrix(tempMatrix: any): any;
+        getLocalTransformMatrix(tempMatrix: any): Phaser.GameObjects.Components.TransformMatrix;
         getWorldTransformMatrix(tempMatrix: any, parentMatrix: any): any;
     };
     const extendSkew: (clazz: any) => void;
@@ -6265,6 +6270,7 @@ declare namespace dragonBones.phaser.util {
         decomposedMatrix: any;
         constructor(a?: number, b?: number, c?: number, d?: number, tx?: number, ty?: number);
         decomposeMatrix(): any;
+        static applyITRSC(tempMatrix: Phaser.GameObjects.Components.TransformMatrix, x: number, y: number, rotation: number, scaleX: number, scaleY: number, skewX: number, skewY: number): Phaser.GameObjects.Components.TransformMatrix;
         applyITRSC(x: number, y: number, rotation: number, scaleX: number, scaleY: number, skewX: number, skewY: number): this;
         readonly skewX: number;
         readonly skewY: number;

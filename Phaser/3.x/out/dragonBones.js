@@ -15191,7 +15191,12 @@ var dragonBones;
     (function (phaser) {
         var util;
         (function (util) {
-            /** Methods for handling "skew" or "shear", used in deformation. */
+            /**
+             * Methods for handling "skew" or "shear", used in deformation.
+             *
+             * Necessary because default phaser pipeline doesn't respect it; they explicitly reconstruct transformation matrices.
+             * This is worrisome;
+             */
             util.Skew = {
                 getSkewX: function () {
                     return this._skewX || 0;
@@ -15215,7 +15220,7 @@ var dragonBones;
                         tempMatrix = new util.TransformMatrix();
                     }
                     // THIS IS THE PURPOSE OF THE OVERRIDE: applyITRSC vs applyITRS.
-                    return tempMatrix.applyITRSC(this.x, this.y, this._rotation, this._scaleX, this._scaleY, this.skewX, this.skewY);
+                    return util.TransformMatrix.applyITRSC(tempMatrix, this.x, this.y, this._rotation, this._scaleX, this._scaleY, this.skewX, this.skewY);
                 },
                 getWorldTransformMatrix: function (tempMatrix, parentMatrix) {
                     if (tempMatrix === undefined) {
@@ -15278,6 +15283,15 @@ var dragonBones;
                     decomposedMatrix.skewX = this.skewX;
                     decomposedMatrix.skewY = this.skewY;
                     return decomposedMatrix;
+                };
+                TransformMatrix.applyITRSC = function (tempMatrix, x, y, rotation, scaleX, scaleY, skewX, skewY) {
+                    tempMatrix.a = Math.cos(rotation - skewY) * scaleX;
+                    tempMatrix.b = Math.sin(rotation - skewY) * scaleX;
+                    tempMatrix.c = -Math.sin(rotation + skewX) * scaleY;
+                    tempMatrix.d = Math.cos(rotation + skewX) * scaleY;
+                    tempMatrix.tx = x;
+                    tempMatrix.ty = y;
+                    return tempMatrix;
                 };
                 // Provide additional parameters for skew to phaser's applyITRS (as new call, due to changed signature).
                 TransformMatrix.prototype.applyITRSC = function (x, y, rotation, scaleX, scaleY, skewX, skewY) {

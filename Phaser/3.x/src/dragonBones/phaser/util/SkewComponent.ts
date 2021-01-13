@@ -26,7 +26,7 @@ namespace dragonBones.phaser.util {
         getLocalTransformMatrix(tempMatrix) {
             if (tempMatrix === undefined) { tempMatrix = new TransformMatrix(); }
             // THIS IS THE PURPOSE OF THE OVERRIDE: applyITRSC vs applyITRS.
-            return tempMatrix.applyITRSC(this.x, this.y, this._rotation, this._scaleX, this._scaleY, this.skewX, this.skewY);
+            return TransformMatrix.applyITRSC(tempMatrix, this.x, this.y, this._rotation, this._scaleX, this._scaleY, this.skewX, this.skewY);
         },
         getWorldTransformMatrix(tempMatrix, parentMatrix) {
             if (tempMatrix === undefined) { tempMatrix = new TransformMatrix(); }

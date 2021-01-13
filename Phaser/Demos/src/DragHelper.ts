@@ -9,21 +9,22 @@ class DragHelper {
     private _dragDisplayObject: Phaser.GameObjects.GameObject = null;
 
     public enableDrag(scene: Phaser.Scene, displayObject: Phaser.GameObjects.GameObject): void {
-        scene.input.enable(displayObject);
-        scene.input.setDraggable(displayObject, true);
-        displayObject.on("dragstart", (a, b, c) => { this._dragStartHandler(displayObject, a, b, c); }, this);
-        displayObject.on("dragend", this._dragStopHandler, this);
+        displayObject.setInteractive({ draggable: true });
+        displayObject.on("dragstart", (ptr, x, y) => this._dragStartHandler(displayObject, ptr, x, y));
+        displayObject.on("drag", (ptr, x, y) => this._dragHandler(displayObject, ptr, x, y))
+        displayObject.on("dragend", (ptr, x, y, dropped) => this._dragStopHandler(displayObject, ptr, x, y, dropped));
     }
 
     public disableDrag(scene: Phaser.Scene, displayObject: Phaser.GameObjects.Sprite): void {
-        scene.input.setDraggable(displayObject, false);
-        scene.input.disable(displayObject);
-        displayObject.off("dragstart", this._dragStartHandler, this);
-        displayObject.off("dragend", this._dragStopHandler, this);
+        displayObject.removeInteractive();
+        for (let event of ["dragstart", "drag", "dragend"]) {
+            displayObject.off(event);
+        }
     }
 
     private _dragStartHandler(displayObject: Phaser.GameObjects.GameObject, pointer: Phaser.Input.Pointer, dragX: number, dragY: number): void {
         if (this._dragDisplayObject) {
+            console.log("Trying to drag", displayObject, "but already dragging", this._dragDisplayObject);
             return;
         }
 
@@ -49,7 +50,7 @@ class DragHelper {
         }
     }
 
-    private _dragStopHandler(pointer: Phaser.Input.Pointer, dragX: number, dragY: number, dropped: boolean): void {
+    private _dragStopHandler(displayObject: Phaser.GameObjects.GameObject, pointer: Phaser.Input.Pointer, dragX: number, dragY: number, dropped: boolean): void {
         if (!this._dragDisplayObject) {
             return;
         }
@@ -58,7 +59,7 @@ class DragHelper {
         this._dragDisplayObject = null;
     }
 
-    private _dragHandler(pointer: Phaser.Input.Pointer, localX: number, localY: number): void {
+    private _dragHandler(displayObject: Phaser.GameObjects.GameObject, pointer: Phaser.Input.Pointer, localX: number, localY: number): void {
         if (!this._dragDisplayObject) {
             return;
         }

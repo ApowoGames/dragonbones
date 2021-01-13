@@ -16,6 +16,18 @@ namespace dragonBones.phaser.util {
             return decomposedMatrix;
         }
 
+        static applyITRSC(tempMatrix:Phaser.GameObjects.Components.TransformMatrix, x: number, y: number, rotation: number, scaleX: number, scaleY: number, skewX: number, skewY: number): Phaser.GameObjects.Components.TransformMatrix {
+            tempMatrix.a = Math.cos(rotation - skewY) * scaleX;
+            tempMatrix.b = Math.sin(rotation - skewY) * scaleX;
+            tempMatrix.c = -Math.sin(rotation + skewX) * scaleY;
+            tempMatrix.d = Math.cos(rotation + skewX) * scaleY;
+
+            tempMatrix.tx = x;
+            tempMatrix.ty = y;
+
+            return tempMatrix;            
+        }
+
         // Provide additional parameters for skew to phaser's applyITRS (as new call, due to changed signature).
         applyITRSC(x: number, y: number, rotation: number, scaleX: number, scaleY: number, skewX: number, skewY: number): this {
             this.a = Math.cos(rotation - skewY) * scaleX;

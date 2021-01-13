@@ -10,19 +10,21 @@ var DragHelper = /** @class */ (function () {
     };
     DragHelper.prototype.enableDrag = function (scene, displayObject) {
         var _this = this;
-        scene.input.enable(displayObject);
-        scene.input.setDraggable(displayObject, true);
-        displayObject.on("dragstart", function (a, b, c) { _this._dragStartHandler(displayObject, a, b, c); }, this);
-        displayObject.on("dragend", this._dragStopHandler, this);
+        displayObject.setInteractive({ draggable: true });
+        displayObject.on("dragstart", function (ptr, x, y) { return _this._dragStartHandler(displayObject, ptr, x, y); });
+        displayObject.on("drag", function (ptr, x, y) { return _this._dragHandler(displayObject, ptr, x, y); });
+        displayObject.on("dragend", function (ptr, x, y, dropped) { return _this._dragStopHandler(displayObject, ptr, x, y, dropped); });
     };
     DragHelper.prototype.disableDrag = function (scene, displayObject) {
-        scene.input.setDraggable(displayObject, false);
-        scene.input.disable(displayObject);
-        displayObject.off("dragstart", this._dragStartHandler, this);
-        displayObject.off("dragend", this._dragStopHandler, this);
+        displayObject.removeInteractive();
+        for (var _i = 0, _a = ["dragstart", "drag", "dragend"]; _i < _a.length; _i++) {
+            var event_1 = _a[_i];
+            displayObject.off(event_1);
+        }
     };
     DragHelper.prototype._dragStartHandler = function (displayObject, pointer, dragX, dragY) {
         if (this._dragDisplayObject) {
+            console.log("Trying to drag", displayObject, "but already dragging", this._dragDisplayObject);
             return;
         }
         this._dragDisplayObject = displayObject;
@@ -41,14 +43,14 @@ var DragHelper = /** @class */ (function () {
             displayObject.on("pointermove", this._dragHandler, this);
         }
     };
-    DragHelper.prototype._dragStopHandler = function (pointer, dragX, dragY, dropped) {
+    DragHelper.prototype._dragStopHandler = function (displayObject, pointer, dragX, dragY, dropped) {
         if (!this._dragDisplayObject) {
             return;
         }
         this._dragDisplayObject.off("pointermove", this._dragHandler, this);
         this._dragDisplayObject = null;
     };
-    DragHelper.prototype._dragHandler = function (pointer, localX, localY) {
+    DragHelper.prototype._dragHandler = function (displayObject, object, Phaser, Input, Pointer, localX, localY) {
         if (!this._dragDisplayObject) {
             return;
         }
