@@ -163,6 +163,7 @@ namespace dragonBones.phaser.display {
 
                         for (let i = 0, l = vertexCount * 2; i < l; ++i) {
                             fakeVertices[i] = floatArray[vertexOffset + i] * scale;
+                            console.assert(fakeVertices[i] != undefined);
                         }
 
                         for (let i = 0; i < triangleCount * 3; ++i) {
@@ -184,12 +185,18 @@ namespace dragonBones.phaser.display {
                         }
 
                         meshDisplay.clear();
+                        console.assert(fakeVertices.length % 2 == 0);
+                        console.assert(fakeVertices.length > 1 || fakeVertices[0] != undefined);
                         meshDisplay.addVertices(fakeVertices, fakeUvs, fakeIndices);
+                        console.assert(meshDisplay.vertices.length > 0);
+                        console.assert(meshDisplay.vertices[0] != undefined);
 
                         this._textureScale = 1.0;
 
                         meshDisplay.texture = frame.texture;
                         meshDisplay.frame = frame;
+
+                        meshDisplay.updateVertices();
 
                         const isSkinned = this._geometryData.weight !== null;
                         const isSurface = this._parent._boneData.type !== BoneType.Bone;
@@ -267,6 +274,8 @@ namespace dragonBones.phaser.display {
                         }
                     }
 
+                    console.assert(iD < meshDisplay.vertices.length);
+                    console.assert(meshDisplay.vertices[iD] != undefined);
                     meshDisplay.vertices[iD].x = xG;
                     meshDisplay.vertices[iD].y = yG;
                     iD += 1;
@@ -295,16 +304,20 @@ namespace dragonBones.phaser.display {
 
                     if (isSurface) {
                         const matrix = (this._parent as Surface)._getGlobalTransformMatrix(x, y);
+                        console.assert(i < meshDisplay.vertices.length);
+                        console.assert(meshDisplay.vertices[i] != undefined);
                         meshDisplay.vertices[i].x = matrix.a * x + matrix.c * y + matrix.tx;
                         meshDisplay.vertices[i].y = matrix.b * x + matrix.d * y + matrix.ty;
                     }
                     else {
+                        console.assert(i < meshDisplay.vertices.length);
+                        console.assert(meshDisplay.vertices[i] != undefined);
                         meshDisplay.vertices[i].x = x;
                         meshDisplay.vertices[i].y = y;
                     }
                 }
             }
-            // meshDisplay.updateVertices();
+            meshDisplay.updateVertices();
         }
 
         protected _updateTransform(): void {
@@ -323,7 +336,8 @@ namespace dragonBones.phaser.display {
             this._renderDisplay.setRotation();
             this._textureScale = 1.0;
             this._renderDisplay.setScale(this._textureScale);
-            this._renderDisplay["setSkew"](0);
+            // TS note: Since this was added as a mixin, it's likely missing from TS.
+            (this._renderDisplay as any).setSkew(0);
         }
     }
 }

@@ -13,8 +13,12 @@ namespace dragonBones.phaser.display {
             this.setOrtho(this.width, this.height);
         }
 
-        setTint(topLeft?: integer, topRight?: integer, bottomLeft?: integer, bottomRight?: integer){
+        setTint(topLeft?: integer, topRight?: integer, bottomLeft?: integer, bottomRight?: integer) {
           // NOTHING
+        }
+
+        updateVertices() {
+            // NOTHING. But maybe something? We're killing the fakeFoos and just using raw vertices "soon".
         }
     }
 

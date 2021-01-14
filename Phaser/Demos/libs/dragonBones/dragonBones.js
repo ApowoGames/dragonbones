@@ -15344,7 +15344,6 @@ var dragonBones;
                     _this._skewX = 0;
                     _this._skewY = 0;
                     _this.tempTransformMatrix = new phaser.util.TransformMatrix();
-                    _this.setSize(1024, 1024);
                     return _this;
                 }
                 DisplayContainer.prototype.pointToContainer = function (source, output) {
@@ -15377,7 +15376,6 @@ var dragonBones;
                 function ArmatureDisplay(scene) {
                     var _this = _super.call(this, scene) || this;
                     _this.debugDraw = false;
-                    _this.debugDraw = true;
                     return _this;
                 }
                 ArmatureDisplay.prototype.dbInit = function (armature) {
@@ -15560,6 +15558,9 @@ var dragonBones;
                 SlotMesh.prototype.setTint = function (topLeft, topRight, bottomLeft, bottomRight) {
                     // NOTHING
                 };
+                SlotMesh.prototype.updateVertices = function () {
+                    // NOTHING. But maybe something? We're killing the fakeFoos and just using raw vertices "soon".
+                };
                 return SlotMesh;
             }(Phaser.GameObjects.Mesh));
             display.SlotMesh = SlotMesh;
@@ -15712,6 +15713,7 @@ var dragonBones;
                                 var fakeIndices = []; // new Uint16Array(triangleCount * 3);
                                 for (var i = 0, l = vertexCount * 2; i < l; ++i) {
                                     fakeVertices[i] = floatArray[vertexOffset + i] * scale;
+                                    console.assert(fakeVertices[i] != undefined);
                                 }
                                 for (var i = 0; i < triangleCount * 3; ++i) {
                                     fakeIndices[i] = intArray[this._geometryData.offset + 4 /* GeometryVertexIndices */ + i];
@@ -15729,10 +15731,15 @@ var dragonBones;
                                     }
                                 }
                                 meshDisplay.clear();
+                                console.assert(fakeVertices.length % 2 == 0);
+                                console.assert(fakeVertices.length > 1 || fakeVertices[0] != undefined);
                                 meshDisplay.addVertices(fakeVertices, fakeUvs, fakeIndices);
+                                console.assert(meshDisplay.vertices.length > 0);
+                                console.assert(meshDisplay.vertices[0] != undefined);
                                 this._textureScale = 1.0;
                                 meshDisplay.texture = frame.texture;
                                 meshDisplay.frame = frame;
+                                meshDisplay.updateVertices();
                                 var isSkinned = this._geometryData.weight !== null;
                                 var isSurface = this._parent._boneData.type !== 0 /* Bone */;
                                 if (isSkinned || isSurface) {
@@ -15796,6 +15803,8 @@ var dragonBones;
                                     yG += (matrix.b * xL + matrix.d * yL + matrix.ty) * weight;
                                 }
                             }
+                            console.assert(iD < meshDisplay.vertices.length);
+                            console.assert(meshDisplay.vertices[iD] != undefined);
                             meshDisplay.vertices[iD].x = xG;
                             meshDisplay.vertices[iD].y = yG;
                             iD += 1;
@@ -15820,16 +15829,20 @@ var dragonBones;
                             }
                             if (isSurface) {
                                 var matrix = this._parent._getGlobalTransformMatrix(x, y);
+                                console.assert(i < meshDisplay.vertices.length);
+                                console.assert(meshDisplay.vertices[i] != undefined);
                                 meshDisplay.vertices[i].x = matrix.a * x + matrix.c * y + matrix.tx;
                                 meshDisplay.vertices[i].y = matrix.b * x + matrix.d * y + matrix.ty;
                             }
                             else {
+                                console.assert(i < meshDisplay.vertices.length);
+                                console.assert(meshDisplay.vertices[i] != undefined);
                                 meshDisplay.vertices[i].x = x;
                                 meshDisplay.vertices[i].y = y;
                             }
                         }
                     }
-                    // meshDisplay.updateVertices();
+                    meshDisplay.updateVertices();
                 };
                 Slot.prototype._updateTransform = function () {
                     this.updateGlobalTransform();
@@ -15845,7 +15858,8 @@ var dragonBones;
                     this._renderDisplay.setRotation();
                     this._textureScale = 1.0;
                     this._renderDisplay.setScale(this._textureScale);
-                    this._renderDisplay["setSkew"](0);
+                    // TS note: Since this was added as a mixin, it's likely missing from TS.
+                    this._renderDisplay.setSkew(0);
                 };
                 return Slot;
             }(dragonBones.Slot));

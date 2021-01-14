@@ -40,17 +40,15 @@ var DragHelper = /** @class */ (function () {
             }
             this._dragOffset.x = bone.offset.x - this._helpPoint.x;
             this._dragOffset.y = bone.offset.y - this._helpPoint.y;
-            displayObject.on("pointermove", this._dragHandler, this);
         }
     };
     DragHelper.prototype._dragStopHandler = function (displayObject, pointer, dragX, dragY, dropped) {
         if (!this._dragDisplayObject) {
             return;
         }
-        this._dragDisplayObject.off("pointermove", this._dragHandler, this);
         this._dragDisplayObject = null;
     };
-    DragHelper.prototype._dragHandler = function (displayObject, object, Phaser, Input, Pointer, localX, localY) {
+    DragHelper.prototype._dragHandler = function (displayObject, pointer, localX, localY) {
         if (!this._dragDisplayObject) {
             return;
         }

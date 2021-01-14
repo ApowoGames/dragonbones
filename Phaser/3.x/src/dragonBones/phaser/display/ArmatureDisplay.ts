@@ -5,7 +5,6 @@ namespace dragonBones.phaser.display {
 
         constructor(scene: Phaser.Scene) {
             super(scene);
-            this.debugDraw = true;
         }
 
         dbInit(armature: Armature): void {

@@ -45,8 +45,6 @@ class DragHelper {
 
             this._dragOffset.x = bone.offset.x - this._helpPoint.x;
             this._dragOffset.y = bone.offset.y - this._helpPoint.y;
-
-            displayObject.on("pointermove", this._dragHandler, this);
         }
     }
 
@@ -54,8 +52,6 @@ class DragHelper {
         if (!this._dragDisplayObject) {
             return;
         }
-
-        this._dragDisplayObject.off("pointermove", this._dragHandler, this);
         this._dragDisplayObject = null;
     }
 

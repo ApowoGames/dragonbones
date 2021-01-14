@@ -9,6 +9,9 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+// This test looks like it might *never* have worked. The Phaser library hasn't implemented debug yet, and the test (per
+// https://dragonbones.github.io/demo/egret/bounding_box_test/ ) seems to only show information on the debugger.
+// It might be broken! But I can't tell.
 var BoundingBox = /** @class */ (function (_super) {
     __extends(BoundingBox, _super);
     function BoundingBox() {

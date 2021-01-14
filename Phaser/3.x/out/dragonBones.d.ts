@@ -6331,6 +6331,7 @@ declare namespace dragonBones.phaser.display {
         fakeUvs: Uint16Array;
         constructor(scene: Phaser.Scene, x: number, y: number, vertices: number[], uv: number[], colors: number[], alphas: number[], texture: string, frame?: string | integer);
         setTint(topLeft?: integer, topRight?: integer, bottomLeft?: integer, bottomRight?: integer): void;
+        updateVertices(): void;
     }
 }
 declare namespace dragonBones.phaser.display {

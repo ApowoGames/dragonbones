@@ -1,3 +1,6 @@
+// This test looks like it might *never* have worked. The Phaser library hasn't implemented debug yet, and the test (per
+// https://dragonbones.github.io/demo/egret/bounding_box_test/ ) seems to only show information on the debugger.
+// It might be broken! But I can't tell.
 class BoundingBox extends BaseDemo {
     private readonly _helpPointA: Phaser.Math.Vector2 = new Phaser.Math.Vector2();
     private readonly _helpPointB: Phaser.Math.Vector2 = new Phaser.Math.Vector2();
