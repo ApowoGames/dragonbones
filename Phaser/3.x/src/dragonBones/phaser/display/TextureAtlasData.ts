@@ -23,6 +23,10 @@ namespace dragonBones.phaser.display {
             return this._renderTexture;
         }
 
+        public releaseRenderTexture() {
+            this._renderTexture = null;
+        }
+
         // TODO: test set value runtime
         set renderTexture(value: Phaser.Textures.Texture) {
             if (!value || this._renderTexture === value)

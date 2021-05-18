@@ -6364,6 +6364,7 @@ declare namespace dragonBones.phaser.display {
         protected _onClear(): void;
         createTexture(): TextureData;
         renderTexture: Phaser.Textures.Texture;
+        releaseRenderTexture(): void;
     }
     class TextureData extends dragonBones.TextureData {
         static toString(): string;

@@ -15917,6 +15917,9 @@ var dragonBones;
                     enumerable: true,
                     configurable: true
                 });
+                TextureAtlasData.prototype.releaseRenderTexture = function () {
+                    this._renderTexture = null;
+                };
                 return TextureAtlasData;
             }(dragonBones.TextureAtlasData));
             display.TextureAtlasData = TextureAtlasData;
