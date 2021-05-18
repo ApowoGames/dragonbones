@@ -18,3 +18,7 @@ lib-cov
 *.out
 *.pid
 *.gz
+
+.idea/
+*.DS_Store
+yarn.lock
