@@ -19,7 +19,8 @@
     "pixi",
     "bones"
   ],
-  "main": "./builds/index.js",
+  "main": "./Phaser/3.x/out/dragonBones.min.js",
+  "types": "./Phaser/3.x/out/dragonBones.d.ts",
   "bin": {
     "dbr": "./builds/cli.js"
   },
