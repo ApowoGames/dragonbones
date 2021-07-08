@@ -6260,7 +6260,7 @@ declare namespace dragonBones.phaser.util {
         getSkewY(): number;
         setSkewY(v: number): void;
         setSkew(sx: number, sy?: number): void;
-        getLocalTransformMatrix(tempMatrix: any): Phaser.GameObjects.Components.TransformMatrix;
+        getLocalTransformMatrix(tempMatrix: any): any;
         getWorldTransformMatrix(tempMatrix: any, parentMatrix: any): any;
     };
     const extendSkew: (clazz: any) => void;

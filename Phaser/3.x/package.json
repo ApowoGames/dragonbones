@@ -2,8 +2,10 @@
   "name": "dragonbones-phaser",
   "version": "5.6.2",
   "main": "./out/dragonBones.js",
+  "types": "./out/dragonBones.d.ts",
   "scripts": {
-    "build": "tsc && uglifyjs ./out/dragonBones.js -o ./out/dragonBones.min.js -m"
+    "build": "tsc",
+    "ugly": "uglifyjs ./out/dragonBones.js -o ./out/dragonBones.min.js -m"
   },
   "devDependencies": {
     "typescript": "^2.4.2",

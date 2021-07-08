@@ -5,7 +5,11 @@
 		"declaration": true,
 		"stripInternal": true,
 		"alwaysStrict": true,
-		"noUnusedLocals": false,
+		"noImplicitAny": true,
+		"noImplicitThis": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"strictNullChecks": false,
 		"experimentalDecorators": true,
 		"allowSyntheticDefaultImports": true,
 		"target": "es5",
@@ -22,16 +26,13 @@
 	],
 	"files": [
 		"./types/phaser.d.ts",
-
 		"../../DragonBones/src/dragonBones/core/DragonBones.ts",
 		"../../DragonBones/src/dragonBones/core/BaseObject.ts",
-
 		"../../DragonBones/src/dragonBones/geom/Matrix.ts",
 		"../../DragonBones/src/dragonBones/geom/Transform.ts",
 		"../../DragonBones/src/dragonBones/geom/ColorTransform.ts",
 		"../../DragonBones/src/dragonBones/geom/Point.ts",
 		"../../DragonBones/src/dragonBones/geom/Rectangle.ts",
-
 		"../../DragonBones/src/dragonBones/model/UserData.ts",
 		"../../DragonBones/src/dragonBones/model/DragonBonesData.ts",
 		"../../DragonBones/src/dragonBones/model/ArmatureData.ts",
@@ -43,7 +44,6 @@
 		"../../DragonBones/src/dragonBones/model/AnimationData.ts",
 		"../../DragonBones/src/dragonBones/model/AnimationConfig.ts",
 		"../../DragonBones/src/dragonBones/model/TextureAtlasData.ts",
-
 		"../../DragonBones/src/dragonBones/armature/IArmatureProxy.ts",
 		"../../DragonBones/src/dragonBones/armature/Armature.ts",
 		"../../DragonBones/src/dragonBones/armature/TransformObject.ts",
@@ -51,23 +51,18 @@
 		"../../DragonBones/src/dragonBones/armature/Surface.ts",
 		"../../DragonBones/src/dragonBones/armature/Slot.ts",
 		"../../DragonBones/src/dragonBones/armature/Constraint.ts",
-
 		"../../DragonBones/src/dragonBones/animation/IAnimatable.ts",
 		"../../DragonBones/src/dragonBones/animation/WorldClock.ts",
 		"../../DragonBones/src/dragonBones/animation/Animation.ts",
 		"../../DragonBones/src/dragonBones/animation/AnimationState.ts",
 		"../../DragonBones/src/dragonBones/animation/BaseTimelineState.ts",
 		"../../DragonBones/src/dragonBones/animation/TimelineState.ts",
-		
 		"../../DragonBones/src/dragonBones/event/EventObject.ts",
 		"../../DragonBones/src/dragonBones/event/IEventDispatcher.ts",
-
 		"../../DragonBones/src/dragonBones/parser/DataParser.ts",
 		"../../DragonBones/src/dragonBones/parser/ObjectDataParser.ts",
 		"../../DragonBones/src/dragonBones/parser/BinaryDataParser.ts",
-
 		"../../DragonBones/src/dragonBones/factory/BaseFactory.ts",
-
 		"./src/dragonBones/phaser/util/EventDispatcher.ts",
 		"./src/dragonBones/phaser/util/SkewComponent.ts",
 		"./src/dragonBones/phaser/util/TransformMatrix.ts",
